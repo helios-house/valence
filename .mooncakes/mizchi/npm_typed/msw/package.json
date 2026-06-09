@@ -1,0 +1,7 @@
+{
+  "name": "@npm_typed/msw",
+  "private": true,
+  "peerDependencies": {
+    "msw": "^2.0.0"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "name": "@npm_typed/memfs",
+  "private": true,
+  "peerDependencies": {
+    "memfs": "^4.0.0"
+  }
+}

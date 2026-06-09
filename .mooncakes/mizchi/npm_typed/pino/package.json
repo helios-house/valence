@@ -1,0 +1,7 @@
+{
+  "name": "@npm_typed/pino",
+  "private": true,
+  "peerDependencies": {
+    "pino": "^10.0.0"
+  }
+}

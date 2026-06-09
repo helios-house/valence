@@ -1,0 +1,7 @@
+{
+  "name": "@npm_typed/zx",
+  "private": true,
+  "peerDependencies": {
+    "zx": "^8.0.0"
+  }
+}

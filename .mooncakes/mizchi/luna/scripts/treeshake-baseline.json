@@ -1,0 +1,65 @@
+{
+  "generatedAt": "2026-04-11T17:40:20.721Z",
+  "entries": [
+    {
+      "id": "signals-only",
+      "bytes": 6207,
+      "gzip": 2194
+    },
+    {
+      "id": "signals-effect",
+      "bytes": 7734,
+      "gzip": 2609
+    },
+    {
+      "id": "memo",
+      "bytes": 7324,
+      "gzip": 2512
+    },
+    {
+      "id": "render",
+      "bytes": 6803,
+      "gzip": 2149
+    },
+    {
+      "id": "router-resource",
+      "bytes": 26565,
+      "gzip": 7098
+    },
+    {
+      "id": "resource-lite",
+      "bytes": 351,
+      "gzip": 210
+    },
+    {
+      "id": "resource-index",
+      "bytes": 8617,
+      "gzip": 2788
+    },
+    {
+      "id": "router-lite",
+      "bytes": 2539,
+      "gzip": 1149
+    },
+    {
+      "id": "router-index",
+      "bytes": 23511,
+      "gzip": 6187
+    },
+    {
+      "id": "split-signals",
+      "bytes": 13149,
+      "gzip": 3688
+    },
+    {
+      "id": "split-signals-shared",
+      "bytes": 10546,
+      "gzip": 3345
+    },
+    {
+      "id": "raw-signals",
+      "bytes": 7288,
+      "gzip": 2363
+    }
+  ]
+}

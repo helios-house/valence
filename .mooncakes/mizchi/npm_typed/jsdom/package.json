@@ -1,0 +1,7 @@
+{
+  "name": "@npm_typed/jsdom",
+  "private": true,
+  "peerDependencies": {
+    "jsdom": "^27.0.0"
+  }
+}

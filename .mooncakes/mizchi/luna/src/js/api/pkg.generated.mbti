@@ -1,0 +1,188 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "mizchi/luna/js/api"
+
+import {
+  "mizchi/luna/core/routes",
+  "mizchi/luna/dom/router",
+  "mizchi/luna/js/resource",
+  "mizchi/signals",
+  "mizchi/signals/ui",
+}
+
+// Values
+pub fn batch(() -> Any) -> Any
+
+pub fn batch_end() -> Unit
+
+pub fn batch_start() -> Unit
+
+pub fn combine(@signals.Signal[Any], @signals.Signal[Any], (Any, Any) -> Any) -> () -> Any
+
+pub fn create_context(Any) -> JsContext
+
+pub fn create_deferred() -> (JsResource, (Any) -> Unit, (String) -> Unit)
+
+pub fn create_element(String, Array[(String, @mizchi/luna/dom.AttrValue)], Array[@mizchi/luna/dom.DomNode]) -> @mizchi/luna/dom.DomNode
+
+pub fn create_element_ns(String, String, Array[(String, @mizchi/luna/dom.AttrValue)], Array[@mizchi/luna/dom.DomNode]) -> @mizchi/luna/dom.DomNode
+
+pub fn create_memo(() -> Any) -> () -> Any
+
+pub fn create_resource(((Any) -> Unit, (String) -> Unit) -> Unit) -> JsResource
+
+pub fn create_root((() -> Unit) -> Any) -> Any
+
+pub fn create_router(Array[@routes.Routes], base? : String) -> BrowserRouter
+
+pub fn create_signal(Any) -> @signals.Signal[Any]
+
+pub fn debounced(@signals.Signal[Any], Int) -> @signals.Signal[Any]
+
+pub fn effect(() -> Unit) -> () -> Unit
+
+pub fn events() -> @mizchi/luna/dom.HandlerMap
+
+pub fn for_each(() -> Array[Any], (Any, Int) -> @mizchi/luna/dom.DomNode) -> @mizchi/luna/dom.DomNode
+
+pub fn fragment(Array[@mizchi/luna/dom.DomNode]) -> @mizchi/luna/dom.DomNode
+
+pub fn get(@signals.Signal[Any]) -> Any
+
+pub fn get_owner() -> JsOwner?
+
+pub fn has_owner() -> Bool
+
+pub fn jsx(String, Array[(String, @mizchi/luna/dom.AttrValue)], Array[@mizchi/luna/dom.DomNode]) -> @mizchi/luna/dom.DomNode
+
+pub fn jsxs(String, Array[(String, @mizchi/luna/dom.AttrValue)], Array[@mizchi/luna/dom.DomNode]) -> @mizchi/luna/dom.DomNode
+
+pub fn loading(() -> Bool, () -> @mizchi/luna/dom.DomNode, () -> @mizchi/luna/dom.DomNode) -> @mizchi/luna/dom.DomNode
+
+pub fn map(@signals.Signal[Any], (Any) -> Any) -> () -> Any
+
+pub fn mathml_ns() -> String
+
+pub fn mount_to(@mizchi/js/browser/dom.Element, @mizchi/luna/dom.DomNode) -> Unit
+
+pub fn on_cleanup(() -> Unit) -> Unit
+
+pub fn on_mount(() -> Unit) -> Unit
+
+pub fn peek(@signals.Signal[Any]) -> Any
+
+pub fn portal_to_body(Array[@mizchi/luna/dom.DomNode]) -> @mizchi/luna/dom.DomNode
+
+pub fn portal_to_element_with_shadow(@mizchi/js/browser/dom.Element, Array[@mizchi/luna/dom.DomNode]) -> @mizchi/luna/dom.DomNode
+
+pub fn portal_to_selector(String, Array[@mizchi/luna/dom.DomNode]) -> @mizchi/luna/dom.DomNode
+
+pub fn portal_with_shadow(Array[@mizchi/luna/dom.DomNode]) -> @mizchi/luna/dom.DomNode
+
+pub fn provide(JsContext, Any, () -> Any) -> Any
+
+pub fn register(String, (@mizchi/js/browser/dom.Element) -> @mizchi/luna/core.Node[@mizchi/js/core.Any, String]) -> Unit
+
+pub fn register_shadow(String, mode? : String, (@mizchi/js/browser/dom.Element) -> @mizchi/luna/core.Node[@mizchi/js/core.Any, String]) -> Unit
+
+pub fn register_with_attrs(String, Array[String], (@mizchi/js/browser/dom.Element, Map[String, @signals.Signal[String]]) -> @mizchi/luna/core.Node[@mizchi/js/core.Any, String]) -> Unit
+
+pub fn render_effect(() -> Unit) -> () -> Unit
+
+pub fn render_to(@mizchi/js/browser/dom.Element, @mizchi/luna/dom.DomNode) -> Unit
+
+pub fn resource_error(JsResource) -> Any
+
+pub fn resource_get(JsResource) -> JsAsyncState
+
+pub fn resource_is_failure(JsResource) -> Bool
+
+pub fn resource_is_pending(JsResource) -> Bool
+
+pub fn resource_is_success(JsResource) -> Bool
+
+pub fn resource_peek(JsResource) -> JsAsyncState
+
+pub fn resource_pending_getter(JsResource) -> () -> Bool
+
+pub fn resource_refetch(JsResource) -> Unit
+
+pub fn resource_value(JsResource) -> Any
+
+pub fn route_page(String, String) -> @routes.Routes
+
+pub fn route_page_full(String, String, String, Array[(String, String)]) -> @routes.Routes
+
+pub fn route_page_titled(String, String, String) -> @routes.Routes
+
+pub fn router_dispose(BrowserRouter) -> Unit
+
+pub fn router_get_base(BrowserRouter) -> String
+
+pub fn router_get_match(BrowserRouter) -> @routes.RoutesMatch?
+
+pub fn router_get_path(BrowserRouter) -> String
+
+pub fn router_navigate(BrowserRouter, String) -> Unit
+
+pub fn router_replace(BrowserRouter, String) -> Unit
+
+pub fn run_untracked(() -> Any) -> Any
+
+pub fn run_with_owner(JsOwner, () -> Any) -> Any
+
+pub fn set(@signals.Signal[Any], Any) -> Unit
+
+pub fn show(() -> Bool, () -> @mizchi/luna/dom.DomNode) -> @mizchi/luna/dom.DomNode
+
+pub fn state_error(JsAsyncState) -> Any
+
+pub fn state_is_failure(JsAsyncState) -> Bool
+
+pub fn state_is_pending(JsAsyncState) -> Bool
+
+pub fn state_is_success(JsAsyncState) -> Bool
+
+pub fn state_value(JsAsyncState) -> Any
+
+pub fn subscribe(@signals.Signal[Any], (Any) -> Unit) -> () -> Unit
+
+pub fn svg_ns() -> String
+
+pub fn text(String) -> @mizchi/luna/dom.DomNode
+
+pub fn text_dyn(() -> String) -> @mizchi/luna/dom.DomNode
+
+pub fn update(@signals.Signal[Any], (Any) -> Any) -> Unit
+
+pub fn use_context(JsContext) -> Any
+
+// Errors
+
+// Types and methods
+#external
+pub type Any
+
+pub struct BrowserRouter(@router.BrowserRouter)
+#deprecated
+pub fn BrowserRouter::inner(Self) -> @router.BrowserRouter
+
+pub struct JsAsyncState(@ui.AsyncState[Any])
+#deprecated
+pub fn JsAsyncState::inner(Self) -> @ui.AsyncState[Any]
+
+pub struct JsContext(@signals.Context[Any])
+#deprecated
+pub fn JsContext::inner(Self) -> @signals.Context[Any]
+
+pub struct JsOwner(@signals.Owner)
+#deprecated
+pub fn JsOwner::inner(Self) -> @signals.Owner
+
+pub struct JsResource(@resource.Resource[Any])
+#deprecated
+pub fn JsResource::inner(Self) -> @resource.Resource[Any]
+
+// Type aliases
+
+// Traits
+

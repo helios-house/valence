@@ -1,0 +1,12 @@
+import {
+  "mizchi/js",
+  "mizchi/js/core",
+  "mizchi/js/browser/dom",
+  "mizchi/js/web/http",
+  "mizchi/npm_typed/react",
+  "moonbitlang/core/bench",
+}
+
+warnings = "-25"
+
+supported_targets = "js"

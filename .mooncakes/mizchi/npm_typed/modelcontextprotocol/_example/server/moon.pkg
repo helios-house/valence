@@ -1,0 +1,12 @@
+import {
+  "mizchi/js/core",
+  "mizchi/js/mbtconv",
+  "mizchi/npm_typed/modelcontextprotocol" @mcp,
+  "moonbitlang/async",
+}
+
+supported_targets = "js"
+
+options(
+  "is-main": true,
+)

@@ -1,0 +1,11 @@
+import {
+  "mizchi/luna/core" @core,
+  "mizchi/luna" @luna,
+  "mizchi/luna/core/render" @render,
+}
+
+import {
+  "moonbitlang/async",
+} for "test"
+
+supported_targets = "all"

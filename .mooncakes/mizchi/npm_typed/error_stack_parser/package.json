@@ -1,0 +1,7 @@
+{
+  "name": "@npm_typed/error_stack_parser",
+  "private": true,
+  "peerDependencies": {
+    "error-stack-parser": "^2.0.0"
+  }
+}

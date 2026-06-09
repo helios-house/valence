@@ -1,0 +1,23 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "mizchi/luna/tests/counter_component"
+
+import {
+  "mizchi/luna/core",
+  "mizchi/signals",
+}
+
+// Values
+pub fn render_counter(@signals.Signal[Int], @core.EventHandler[Unit], @core.EventHandler[Unit]) -> @core.Node[Unit, String]
+
+pub fn render_counter_html(Int) -> String
+
+pub fn serialize_state(Int) -> String
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+
+// Traits
+

@@ -1,0 +1,145 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "mizchi/luna/js/resource"
+
+import {
+  "mizchi/signals",
+  "mizchi/signals/ui",
+}
+
+// Values
+pub fn all(Array[@signals.Signal[Bool]]) -> () -> Bool
+
+pub fn any(Array[@signals.Signal[Bool]]) -> () -> Bool
+
+pub fn[T] batch(() -> T) -> T
+
+pub fn batch_end() -> Unit
+
+pub fn batch_start() -> Unit
+
+pub fn[A, B, R] combine2(@signals.Signal[A], @signals.Signal[B], (A, B) -> R) -> () -> R
+
+pub fn[A, B, C, R] combine3(@signals.Signal[A], @signals.Signal[B], @signals.Signal[C], (A, B, C) -> R) -> () -> R
+
+pub fn[A, B, C, D, R] combine4(@signals.Signal[A], @signals.Signal[B], @signals.Signal[C], @signals.Signal[D], (A, B, C, D) -> R) -> () -> R
+
+pub fn[T] computed(() -> T) -> () -> T
+
+pub fn[T] create_context(T) -> @signals.Context[T]
+
+pub fn[T] create_root((() -> Unit) -> T) -> T
+
+pub fn[T] create_root_with_dispose(() -> T) -> (T, () -> Unit)
+
+pub fn[T] deferred() -> (Resource[T], (T) -> Unit, (String) -> Unit)
+
+pub fn effect(() -> Unit) -> () -> Unit
+
+pub fn effect_once(() -> Unit) -> Unit
+
+pub fn effect_when(() -> Bool, () -> Unit) -> () -> Unit
+
+pub fn[T] flatten(@signals.Signal[@signals.Signal[T]]) -> () -> T
+
+pub fn get_owner() -> @signals.Owner?
+
+pub fn has_owner() -> Bool
+
+pub fn is_batching() -> Bool
+
+pub fn[T] memo(() -> T) -> () -> T
+
+pub fn new_effect_id() -> Int
+
+pub fn[T] on(@signals.Signal[T], (T) -> Unit) -> () -> Unit
+
+pub fn on_cleanup(() -> Unit) -> Unit
+
+pub fn[T] on_immediate(@signals.Signal[T], (T) -> Unit) -> () -> Unit
+
+pub fn on_mount(() -> Unit) -> Unit
+
+pub fn[T] previous(@signals.Signal[T]) -> () -> T?
+
+pub fn[T] previous_with_initial(@signals.Signal[T], T) -> () -> T
+
+pub fn[T, R] provide(@signals.Context[T], T, () -> R) -> R
+
+pub fn register_disposer(() -> Unit) -> Unit
+
+pub fn register_owner_cleanup(() -> Unit) -> Unit
+
+pub fn render_effect(() -> Unit) -> () -> Unit
+
+pub fn[T] resource(((T) -> Unit, (String) -> Unit) -> Unit) -> Resource[T]
+
+pub fn[T] resource_rejected(String) -> Resource[T]
+
+pub fn[T] resource_resolved(T) -> Resource[T]
+
+pub fn[T] run_with_cleanup_tracking(Array[() -> Unit], () -> T) -> T
+
+pub fn[T] run_with_owner(@signals.Owner, () -> T) -> T
+
+pub fn[T] select(@signals.Signal[Array[T]], @signals.Signal[Int]) -> () -> T?
+
+pub fn set_current_cleanups(Array[() -> Unit]?) -> Array[() -> Unit]?
+
+pub fn[T] sig_filter(@signals.Signal[T], (T) -> Bool) -> @signals.Signal[T?]
+
+pub fn[T, U] sig_filter_map(@signals.Signal[T], (T) -> U?) -> @signals.Signal[U?]
+
+pub fn[T, U] sig_map(@signals.Signal[T], (T) -> U) -> () -> U
+
+pub fn[T] signal(T) -> @signals.Signal[T]
+
+pub fn[T] switch_(@signals.Signal[Bool], @signals.Signal[T], @signals.Signal[T]) -> () -> T
+
+pub fn[T] to_getter(@signals.Signal[T]) -> () -> T
+
+pub fn[T] untracked(() -> T) -> T
+
+pub fn[T] use_context(@signals.Context[T]) -> T
+
+pub fn[T : Eq] watch(() -> T, (T, T) -> Unit) -> () -> Unit
+
+pub fn[T : Eq] watch_immediate(() -> T, (T, T?) -> Unit) -> () -> Unit
+
+pub fn[T] with_parent_owner(@signals.Owner?, () -> T) -> T
+
+// Errors
+
+// Types and methods
+pub struct Resource[T] {
+  state : @signals.Signal[@ui.AsyncState[T]]
+  // private fields
+}
+pub fn[T] Resource::error(Self[T]) -> String?
+pub fn[T] Resource::get(Self[T]) -> @ui.AsyncState[T]
+pub fn[T] Resource::is_failure(Self[T]) -> Bool
+pub fn[T] Resource::is_pending(Self[T]) -> Bool
+pub fn[T] Resource::is_success(Self[T]) -> Bool
+pub fn[T] Resource::peek(Self[T]) -> @ui.AsyncState[T]
+pub fn[T] Resource::pending(Self[T]) -> () -> Bool
+pub fn[T] Resource::refetch(Self[T]) -> Unit
+pub fn[T] Resource::value(Self[T]) -> T?
+
+// Type aliases
+pub using @signals {type Context}
+
+pub using @signals {type Lens}
+
+pub using @signals {type LensStore}
+
+pub using @signals {type Owner}
+
+pub using @signals {type Signal}
+
+pub using @signals {type SplitStore2}
+
+pub using @signals {type SplitStore3}
+
+pub using @signals {trait Snapshot}
+
+// Traits
+

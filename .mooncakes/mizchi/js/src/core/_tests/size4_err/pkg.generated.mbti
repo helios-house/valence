@@ -1,0 +1,14 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "mizchi/js/core/_tests/size4_err"
+
+// Values
+
+// Errors
+type AppError derive(Show)
+
+// Types and methods
+
+// Type aliases
+
+// Traits
+

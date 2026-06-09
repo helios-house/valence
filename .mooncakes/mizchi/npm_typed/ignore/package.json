@@ -1,0 +1,7 @@
+{
+  "name": "@npm_typed/ignore",
+  "private": true,
+  "peerDependencies": {
+    "ignore": "^7.0.0"
+  }
+}

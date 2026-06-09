@@ -1,0 +1,7 @@
+{
+  "name": "@npm_typed/debug",
+  "private": true,
+  "peerDependencies": {
+    "debug": "^4.0.0"
+  }
+}

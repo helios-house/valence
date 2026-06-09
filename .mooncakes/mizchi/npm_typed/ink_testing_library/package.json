@@ -1,0 +1,7 @@
+{
+  "name": "@npm_typed/ink_testing_library",
+  "private": true,
+  "peerDependencies": {
+    "ink-testing-library": "^4.0.0"
+  }
+}

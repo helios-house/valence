@@ -1,0 +1,16 @@
+{
+  "name": "helios-house/valence",
+  "version": "0.1.2",
+  "preferred-target": "js",
+  "description": "MoonBit UI where every component is readable by humans and AI equally",
+  "readme": "README.md",
+  "deps": {
+    "mizchi/luna": "0.21.0",
+    "mizchi/signals": "0.6.4",
+    "mizchi/js": "0.10.16"
+  },
+  "repository": "https://github.com/helios-house/valence",
+  "license": "MIT",
+  "keywords": ["ui", "framework", "moonbit", "reactive", "dual-render", "ai-native"],
+  "supported_targets": ["js"]
+}

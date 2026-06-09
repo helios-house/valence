@@ -1,0 +1,7 @@
+{
+  "name": "@npm_typed/semver",
+  "private": true,
+  "peerDependencies": {
+    "semver": "^7.0.0"
+  }
+}

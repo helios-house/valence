@@ -1,0 +1,7 @@
+{
+  "name": "@npm_typed/dotenv",
+  "private": true,
+  "peerDependencies": {
+    "dotenv": "^17.0.0"
+  }
+}

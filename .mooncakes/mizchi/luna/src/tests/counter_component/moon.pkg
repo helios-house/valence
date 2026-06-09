@@ -1,0 +1,16 @@
+import {
+  "mizchi/luna" @luna,
+  "mizchi/signals",
+  "mizchi/luna/js/resource" @resource,
+  "mizchi/luna/core/render" @render,
+}
+
+supported_targets = "js"
+options(
+  link: {
+    "js": {
+      "exports": [ "render_counter_html", "serialize_state" ],
+      "format": "esm",
+    },
+  },
+)

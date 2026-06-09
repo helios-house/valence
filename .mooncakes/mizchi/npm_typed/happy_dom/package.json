@@ -1,0 +1,7 @@
+{
+  "name": "@npm_typed/happy_dom",
+  "private": true,
+  "peerDependencies": {
+    "happy-dom": "^20.0.0"
+  }
+}

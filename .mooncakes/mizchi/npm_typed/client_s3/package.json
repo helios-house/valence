@@ -1,0 +1,7 @@
+{
+  "name": "@npm_typed/client_s3",
+  "private": true,
+  "peerDependencies": {
+    "@aws-sdk/client-s3": "^3.0.0"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "name": "@npm_typed/react_router",
+  "private": true,
+  "peerDependencies": {
+    "react-router": "^7.0.0"
+  }
+}

@@ -1,0 +1,7 @@
+import {
+  "mizchi/luna/core" @core,
+  "moonbitlang/core/bench",
+  "moonbitlang/core/json",
+}
+
+supported_targets = "all"

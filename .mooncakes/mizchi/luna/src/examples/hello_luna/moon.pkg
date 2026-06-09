@@ -1,0 +1,13 @@
+import {
+  "mizchi/luna/js/resource" @resource,
+  "mizchi/signals",
+  "mizchi/luna/dom" @element,
+  "mizchi/js/browser/dom" @dom,
+}
+
+supported_targets = "js"
+
+options(
+  "is-main": true,
+  link: { "js": { "format": "esm" } },
+)

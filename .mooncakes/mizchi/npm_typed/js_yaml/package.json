@@ -1,0 +1,7 @@
+{
+  "name": "@npm_typed/js_yaml",
+  "private": true,
+  "peerDependencies": {
+    "js-yaml": "^4.0.0"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "name": "@npm_typed/puppeteer",
+  "private": true,
+  "peerDependencies": {
+    "puppeteer": "^24.0.0"
+  }
+}

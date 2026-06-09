@@ -1,0 +1,10 @@
+import {
+  "mizchi/signals" @signals,
+  "mizchi/signals/ui" @ui,
+}
+
+import {
+  "mizchi/luna" @luna,
+} for "test"
+
+supported_targets = "js"

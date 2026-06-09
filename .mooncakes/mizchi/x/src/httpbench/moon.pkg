@@ -1,0 +1,12 @@
+import {
+  "mizchi/x/http" @http,
+  "mizchi/x/sys" @sys,
+  "moonbitlang/async",
+}
+
+supported_targets = "-all+native+js"
+
+options(
+  "is-main": true,
+  targets: { "main.mbt": [ "native", "js" ] },
+)

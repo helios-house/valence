@@ -1,0 +1,13 @@
+import {
+  "mizchi/js/core",
+}
+
+import {
+  "mizchi/js/builtins/global",
+} for "test"
+
+options(
+  is_main: false,
+)
+
+supported_targets = "js"

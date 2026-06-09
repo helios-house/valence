@@ -1,0 +1,8 @@
+import {
+  "mizchi/luna/js/resource" @resource,
+  "mizchi/luna/core" @core,
+  "mizchi/signals",
+  "mizchi/signals/ui" @ui,
+}
+
+supported_targets = "all"

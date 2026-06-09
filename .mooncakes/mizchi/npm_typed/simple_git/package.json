@@ -1,0 +1,7 @@
+{
+  "name": "@npm_typed/simple_git",
+  "private": true,
+  "peerDependencies": {
+    "simple-git": "^3.0.0"
+  }
+}

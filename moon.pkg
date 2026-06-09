@@ -1,0 +1,8 @@
+import {
+  "mizchi/luna/dom" @element,
+  "mizchi/signals" @resource,
+}
+
+options(
+  "supported-targets": "js",
+)

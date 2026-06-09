@@ -1,0 +1,168 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "mizchi/luna/core"
+
+// Values
+pub fn[E, V, Act : Show] action(Act) -> Attr[E, V]
+
+pub fn[E, A] async_(render~ : async () -> Node[E, A], fallback~ : () -> Node[E, A], on_error? : ((Error) -> Node[E, A])?) -> Node[E, A]
+
+pub fn[E, A] attr_dynamic(() -> A) -> Attr[E, A]
+
+pub fn[E] attr_dynamic_style(() -> String) -> Attr[E, String]
+
+pub fn[E, A] attr_handler(EventHandler[E]) -> Attr[E, A]
+
+pub fn[E, A] attr_static(A) -> Attr[E, A]
+
+pub fn[E] attr_style(String) -> Attr[E, String]
+
+pub fn[E, A] component(() -> Node[E, A]) -> Node[E, A]
+
+pub fn[T] component_ref(String, T, trigger? : TriggerType) -> ComponentRef[T]
+
+pub fn[E, A] error_boundary(children~ : () -> Node[E, A] raise, fallback~ : (Error, () -> Unit) -> Node[E, A] raise) -> Node[E, A]
+
+pub fn event_handler() -> EventHandler[Unit]
+
+pub fn[E, A] for_each(() -> Array[Node[E, A]]) -> Node[E, A]
+
+pub fn[E, A] fragment(Array[Node[E, A]]) -> Node[E, A]
+
+pub fn[E, A] h(String, Array[(String, Attr[E, A])], Array[Node[E, A]]) -> Node[E, A]
+
+pub fn[E] handler((E) -> Unit) -> EventHandler[E]
+
+pub fn handler_from_callback(() -> Unit) -> EventHandler[Unit]
+
+pub fn[E, A] has_dynamic_content(Array[(String, Attr[E, A])]) -> Bool
+
+pub fn[E, A] internal_ref(String, String, trigger? : TriggerType, wc? : Bool, styles? : String, children? : Array[Node[E, A]]) -> Node[E, A]
+
+pub fn[E, A] island(String, String, String, Array[Node[E, A]], trigger? : TriggerType) -> Node[E, A]
+
+pub fn[E, A] match_case(when~ : () -> Bool, render~ : () -> Node[E, A]) -> MatchCase[E, A]
+
+pub fn[E, A] raw_html(String) -> Node[E, A]
+
+pub fn[E, A] show(() -> Bool, () -> Node[E, A]) -> Node[E, A]
+
+pub fn[E, A] switch_(cases~ : Array[MatchCase[E, A]], fallback? : (() -> Node[E, A])?) -> Node[E, A]
+
+pub fn[E, A] text(String) -> Node[E, A]
+
+pub fn[E, A] text_dyn(() -> String) -> Node[E, A]
+
+pub fn[T] wc_component_ref(String, T, trigger? : TriggerType) -> ComponentRef[T]
+
+pub fn[E, A] wc_island(String, String, String, String, Array[Node[E, A]], trigger? : TriggerType) -> Node[E, A]
+
+// Errors
+
+// Types and methods
+pub(all) enum Attr[E, A] {
+  VStatic(A)
+  VDynamic(() -> A)
+  VHandler(EventHandler[E])
+  VAction(String)
+}
+
+pub(all) struct ComponentRef[T] {
+  url : String
+  props : T
+  wc : Bool
+  trigger : TriggerType
+}
+
+pub struct EventHandler[E] {
+  callback : (E) -> Unit
+}
+pub fn[E] EventHandler::get_callback(Self[E]) -> (E) -> Unit
+
+pub struct MatchCase[E, A] {
+  when : () -> Bool
+  render : () -> Node[E, A]
+}
+
+pub(all) enum Node[E, A] {
+  Element(VElement[E, A])
+  Text(String)
+  DynamicText(() -> String)
+  Fragment(Array[Node[E, A]])
+  Show(condition~ : () -> Bool, child~ : () -> Node[E, A])
+  For(render~ : () -> Array[Node[E, A]])
+  Component(render~ : () -> Node[E, A])
+  Island(VIsland[E, A])
+  WcIsland(VWcIsland[E, A])
+  Async(VAsync[E, A])
+  ErrorBoundary(VErrorBoundary[E, A])
+  Switch(VSwitch[E, A])
+  InternalRef(VInternalRef[E, A])
+  RawHtml(String)
+}
+
+#alias(Trigger)
+pub(all) enum TriggerType {
+  Load
+  Idle
+  Visible
+  Media(String)
+  None
+}
+pub fn TriggerType::parse(String) -> Self
+pub fn TriggerType::to_string(Self) -> String
+
+pub struct VAsync[E, A] {
+  render : async () -> Node[E, A]
+  fallback : () -> Node[E, A]
+  on_error : ((Error) -> Node[E, A])?
+}
+
+pub struct VElement[E, A] {
+  tag : String
+  attrs : Array[(String, Attr[E, A])]
+  children : Array[Node[E, A]]
+}
+
+pub struct VErrorBoundary[E, A] {
+  children : () -> Node[E, A] raise
+  fallback : (Error, () -> Unit) -> Node[E, A] raise
+}
+
+pub struct VInternalRef[E, A] {
+  url : String
+  state : String
+  trigger : TriggerType
+  wc : Bool
+  styles : String
+  children : Array[Node[E, A]]
+}
+
+pub struct VIsland[E, A] {
+  id : String
+  url : String
+  state : String
+  trigger : TriggerType
+  children : Array[Node[E, A]]
+}
+
+pub struct VSwitch[E, A] {
+  cases : Array[MatchCase[E, A]]
+  fallback : (() -> Node[E, A])?
+}
+
+pub struct VWcIsland[E, A] {
+  name : String
+  url : String
+  styles : String
+  state : String
+  trigger : TriggerType
+  children : Array[Node[E, A]]
+}
+
+// Type aliases
+pub type StaticDomAttr = Attr[Unit, String]
+
+pub type StaticDomNode = Node[Unit, String]
+
+// Traits
+

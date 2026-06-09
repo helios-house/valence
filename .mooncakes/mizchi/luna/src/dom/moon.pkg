@@ -1,0 +1,12 @@
+import {
+  "mizchi/luna/js/resource" @resource,
+  "mizchi/signals",
+  "mizchi/js/core" @js,
+  "mizchi/js/browser/dom" @js_dom,
+  "mizchi/js/builtins/global",
+}
+
+import {
+} for "test"
+
+supported_targets = "js"

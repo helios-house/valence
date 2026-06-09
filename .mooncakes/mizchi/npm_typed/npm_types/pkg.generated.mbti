@@ -1,0 +1,229 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "mizchi/npm_typed/npm_types"
+
+import {
+  "moonbitlang/core/json",
+}
+
+// Values
+
+// Errors
+
+// Types and methods
+pub(all) struct BinDist {
+  shasum : String
+  tarball : String
+} derive(Eq, Show, ToJson, @json.FromJson)
+
+pub(all) struct Bugs {
+  email : String?
+  url : String?
+} derive(Eq, Show, ToJson, @json.FromJson)
+
+pub(all) struct Contact {
+  name : String
+  email : String?
+  url : String?
+} derive(Eq, Show, ToJson, @json.FromJson)
+pub fn Contact::new(String) -> Self
+pub fn Contact::with_email_and_url(String, String, String) -> Self
+
+pub(all) struct DeprecatedLicense {
+  type_ : String
+  url : String
+} derive(Eq, Show, ToJson, @json.FromJson)
+
+pub(all) struct DevEngineDependency {
+  name : String
+  version : String?
+  on_fail : String?
+} derive(Eq, Show, ToJson, @json.FromJson)
+
+pub(all) struct DevEngines {
+  os : Array[DevEngineDependency]?
+  cpu : Array[DevEngineDependency]?
+  libc : Array[DevEngineDependency]?
+  runtime : Array[DevEngineDependency]?
+  package_manager : Array[DevEngineDependency]?
+} derive(Eq, Show, ToJson, @json.FromJson)
+
+pub(all) struct Dist {
+  shasum : String
+  tarball : String
+  signatures : Array[Signature]
+  integrity : String?
+  file_count : Int?
+  unpacked_size : Int?
+  npm_signature : String?
+  bin : Map[String, BinDist]?
+} derive(Eq, Show, ToJson, @json.FromJson)
+
+pub(all) struct Funding {
+  type_ : String
+  url : String
+} derive(Eq, Show, ToJson, @json.FromJson)
+
+pub(all) struct Manifest {
+  name : String
+  dist_tags : Map[String, String]
+  modified : String
+  versions : Map[String, ManifestVersion]
+  cached : Bool?
+} derive(Eq, Show, ToJson, @json.FromJson)
+
+pub(all) struct ManifestVersion {
+  name : String
+  version : String
+  dist : Dist
+  has_shrinkwrap : Bool?
+  bin : Map[String, String]?
+  bundled_dependencies : Array[String]?
+  bundle_dependencies : Array[String]?
+  dependencies : Map[String, String]?
+  dev_dependencies : Map[String, String]?
+  directories : Map[String, String]?
+  engines : Map[String, String]?
+  optional_dependencies : Map[String, String]?
+  peer_dependencies : Map[String, String]?
+  deprecated : String?
+} derive(Eq, Show, ToJson, @json.FromJson)
+
+pub(all) struct PackageJSON {
+  name : String
+  version : String
+  description : String?
+  keywords : Array[String]?
+  homepage : String?
+  license : String?
+  author : Contact?
+  contributors : Array[Contact]?
+  repository : Repository?
+  bugs : Bugs?
+  funding : Array[Funding]?
+  main : String?
+  browser : String?
+  types : String?
+  files : Array[String]?
+  bin : Map[String, String]?
+  man : Array[String]?
+  directories : Map[String, String]?
+  dependencies : Map[String, String]?
+  dev_dependencies : Map[String, String]?
+  peer_dependencies : Map[String, String]?
+  peer_dependencies_meta : Map[String, PeerDependencyMeta]?
+  optional_dependencies : Map[String, String]?
+  bundled_dependencies : Array[String]?
+  bundle_dependencies : Array[String]?
+  overrides : Map[String, String]?
+  scripts : Map[String, String]?
+  config : Map[String, String]?
+  engines : Map[String, String]?
+  os : Array[String]?
+  cpu : Array[String]?
+  dev_engines : DevEngines?
+  private : Bool?
+  publish_config : Map[String, String]?
+  workspaces : Array[String]?
+  licenses : Array[DeprecatedLicense]?
+} derive(Eq, Show, ToJson, @json.FromJson)
+pub fn PackageJSON::new(String, String) -> Self
+
+pub(all) struct Packument {
+  id : String
+  rev : String
+  name : String
+  dist_tags : Map[String, String]
+  time : PackumentTime
+  versions : Map[String, PackumentVersion]
+  description : String?
+  keywords : Array[String]?
+  homepage : String?
+  license : String?
+  author : Contact?
+  contributors : Array[Contact]?
+  repository : Repository?
+  bugs : Bugs?
+  maintainers : Array[Contact]?
+  readme : String?
+  readme_filename : String?
+  cached : Bool?
+  users : Map[String, Bool]?
+} derive(Eq, Show, ToJson, @json.FromJson)
+
+pub(all) struct PackumentTime {
+  created : String
+  modified : String
+  versions : Map[String, String]
+} derive(Eq, Show, ToJson, @json.FromJson)
+
+pub(all) struct PackumentVersion {
+  name : String
+  version : String
+  id : String
+  npm_version : String
+  dist : Dist
+  description : String?
+  keywords : Array[String]?
+  homepage : String?
+  license : String?
+  author : Contact?
+  contributors : Array[Contact]?
+  repository : Repository?
+  bugs : Bugs?
+  funding : Array[Funding]?
+  main : String?
+  browser : String?
+  types : String?
+  files : Array[String]?
+  bin : Map[String, String]?
+  man : Array[String]?
+  directories : Map[String, String]?
+  dependencies : Map[String, String]?
+  dev_dependencies : Map[String, String]?
+  peer_dependencies : Map[String, String]?
+  peer_dependencies_meta : Map[String, PeerDependencyMeta]?
+  optional_dependencies : Map[String, String]?
+  bundled_dependencies : Array[String]?
+  bundle_dependencies : Array[String]?
+  overrides : Map[String, String]?
+  scripts : Map[String, String]?
+  config : Map[String, String]?
+  engines : Map[String, String]?
+  os : Array[String]?
+  cpu : Array[String]?
+  dev_engines : DevEngines?
+  private : Bool?
+  publish_config : Map[String, String]?
+  workspaces : Array[String]?
+  licenses : Array[DeprecatedLicense]?
+  has_shrinkwrap : Bool?
+  node_version : String?
+  npm_user : Contact?
+  maintainers : Array[Contact]?
+  deprecated : String?
+  git_head : String?
+  readme : String?
+  readme_filename : String?
+} derive(Eq, Show, ToJson, @json.FromJson)
+
+pub(all) struct PeerDependencyMeta {
+  optional : Bool
+} derive(Eq, Show, ToJson, @json.FromJson)
+
+pub(all) struct Repository {
+  url : String
+  type_ : String?
+  directory : String?
+} derive(Eq, Show, ToJson, @json.FromJson)
+pub fn Repository::git(String) -> Self
+pub fn Repository::new(String) -> Self
+
+pub(all) struct Signature {
+  keyid : String
+  sig : String
+} derive(Eq, Show, ToJson, @json.FromJson)
+
+// Type aliases
+
+// Traits
+

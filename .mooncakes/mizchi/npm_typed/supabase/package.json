@@ -1,0 +1,7 @@
+{
+  "name": "@npm_typed/supabase",
+  "private": true,
+  "peerDependencies": {
+    "@supabase/supabase-js": "^2"
+  }
+}

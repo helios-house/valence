@@ -1,0 +1,7 @@
+{
+  "name": "@npm_typed/react_dom",
+  "private": true,
+  "peerDependencies": {
+    "react-dom": "^19.0.0"
+  }
+}

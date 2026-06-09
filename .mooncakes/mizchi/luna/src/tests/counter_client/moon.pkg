@@ -1,0 +1,13 @@
+import {
+  "mizchi/luna" @luna,
+  "mizchi/signals",
+  "mizchi/luna/js/resource" @resource,
+  "mizchi/js/browser/dom" @js_dom,
+  "mizchi/luna/dom/client" @client,
+  "mizchi/js/core" @js,
+}
+
+supported_targets = "js"
+options(
+  link: { "js": { "exports": [ "hydrate" ], "format": "esm" } },
+)

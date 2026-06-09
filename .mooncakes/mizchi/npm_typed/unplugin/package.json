@@ -1,0 +1,7 @@
+{
+  "name": "@npm_typed/unplugin",
+  "private": true,
+  "peerDependencies": {
+    "unplugin": "^2.0.0"
+  }
+}

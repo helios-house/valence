@@ -1,0 +1,9 @@
+import {
+  "mizchi/js",
+  "mizchi/js/core",
+  "mizchi/npm_typed/tauri/dpi",
+}
+
+warnings = "-1"
+
+supported_targets = "js"

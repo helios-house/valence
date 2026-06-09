@@ -1,0 +1,12 @@
+import {
+  "mizchi/js",
+  "mizchi/js/core",
+  "mizchi/npm_typed/puppeteer",
+  "mizchi/js/builtins/global",
+}
+
+import {
+  "moonbitlang/async",
+} for "test"
+
+supported_targets = "js"

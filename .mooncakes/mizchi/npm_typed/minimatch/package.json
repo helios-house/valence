@@ -1,0 +1,7 @@
+{
+  "name": "@npm_typed/minimatch",
+  "private": true,
+  "peerDependencies": {
+    "minimatch": "^10.0.0"
+  }
+}

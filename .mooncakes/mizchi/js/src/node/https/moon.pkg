@@ -1,0 +1,6 @@
+import {
+  "mizchi/js/core",
+  "mizchi/js/web/event",
+}
+
+supported_targets = "js"

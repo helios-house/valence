@@ -1,0 +1,12 @@
+import {
+  "moonbitlang/parser",
+  "moonbitlang/parser/syntax",
+  "moonbitlang/parser/basic",
+  "moonbitlang/core/list",
+}
+
+supported_targets = "js"
+options(
+  "is-main": true,
+  link: { "js": { "exports": [ "analyze_file_json" ], "format": "esm" } },
+)

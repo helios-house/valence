@@ -1,0 +1,8 @@
+import {
+  "mizchi/luna/core" @core,
+  "mizchi/luna" @luna,
+  "mizchi/luna/core/render" @render,
+  "mizchi/js/web/streams" @streams,
+}
+
+supported_targets = "js"

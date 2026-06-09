@@ -1,0 +1,9 @@
+import {
+  "mizchi/luna/x/stella/component" @wc,
+  "mizchi/js" @js,
+}
+
+supported_targets = "js"
+options(
+  link: { "js": { "exports": [ "setup", "template" ], "format": "esm" } },
+)

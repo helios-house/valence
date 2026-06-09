@@ -1,0 +1,7 @@
+{
+  "name": "@npm_typed/comlink",
+  "private": true,
+  "peerDependencies": {
+    "comlink": "^4.0.0"
+  }
+}

@@ -1,0 +1,9 @@
+import {
+  "mizchi/js/core",
+  "mizchi/js/browser/dom",
+  "mizchi/npm_typed/preact",
+}
+
+warnings = "-25"
+
+supported_targets = "js"

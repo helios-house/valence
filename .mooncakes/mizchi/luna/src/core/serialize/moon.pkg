@@ -1,0 +1,8 @@
+import {
+  "mizchi/luna/js/resource" @resource,
+  "mizchi/signals",
+  "moonbitlang/core/bench",
+  "moonbitlang/core/json",
+}
+
+supported_targets = "js"

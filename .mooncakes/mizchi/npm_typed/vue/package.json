@@ -1,0 +1,7 @@
+{
+  "name": "@npm_typed/vue",
+  "private": true,
+  "peerDependencies": {
+    "vue": "^3.0.0"
+  }
+}

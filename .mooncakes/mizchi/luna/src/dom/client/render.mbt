@@ -1,0 +1,908 @@
+// Client-side Rendering - Create new DOM nodes from VNode
+//
+
+///|
+/// Check if a tag is an SVG element
+fn is_svg_element(tag : String) -> Bool {
+  match tag {
+    "svg"
+    | "g"
+    | "defs"
+    | "symbol"
+    | "use"
+    | "rect"
+    | "circle"
+    | "ellipse"
+    | "line"
+    | "polyline"
+    | "polygon"
+    | "path"
+    | "text"
+    | "tspan"
+    | "image"
+    | "clipPath"
+    | "mask"
+    | "linearGradient"
+    | "radialGradient"
+    | "stop"
+    | "pattern"
+    | "filter"
+    | "animate"
+    | "animateTransform"
+    | "foreignObject"
+    | "title"
+    | "desc"
+    | "marker"
+    | "feGaussianBlur"
+    | "feOffset"
+    | "feBlend"
+    | "feColorMatrix"
+    | "feComponentTransfer"
+    | "feComposite"
+    | "feConvolveMatrix"
+    | "feDiffuseLighting"
+    | "feDisplacementMap"
+    | "feFlood"
+    | "feFuncR"
+    | "feFuncG"
+    | "feFuncB"
+    | "feFuncA"
+    | "feImage"
+    | "feMerge"
+    | "feMergeNode"
+    | "feMorphology"
+    | "feSpecularLighting"
+    | "feTile"
+    | "feTurbulence" => true
+    _ => false
+  }
+}
+
+///|
+/// Check if a tag is a MathML element
+fn is_mathml_element(tag : String) -> Bool {
+  match tag {
+    "math"
+    | "mrow"
+    | "mi"
+    | "mn"
+    | "mo"
+    | "mfrac"
+    | "msqrt"
+    | "mroot"
+    | "mstyle"
+    | "mtext"
+    | "menclose"
+    | "mfenced"
+    | "msup"
+    | "msub"
+    | "msubsup"
+    | "munder"
+    | "mover"
+    | "munderover"
+    | "mtable"
+    | "mtr"
+    | "mtd"
+    | "mlabeledtr"
+    | "maligngroup"
+    | "malignmark"
+    | "mspace"
+    | "mphantom"
+    | "mglyph"
+    | "merror"
+    | "mpadded"
+    | "semantics"
+    | "annotation"
+    | "annotation-xml" => true
+    _ => false
+  }
+}
+
+///|
+/// Create an SVG element with proper namespace
+extern "js" fn create_svg_element_ns(tag : String) -> @js_dom.Element =
+  #| (tag) => document.createElementNS("http://www.w3.org/2000/svg", tag)
+
+///|
+/// Create a MathML element with proper namespace
+extern "js" fn create_mathml_element_ns(tag : String) -> @js_dom.Element =
+  #| (tag) => document.createElementNS("http://www.w3.org/1998/Math/MathML", tag)
+
+///|
+/// Render VNode to DOM within SVG context (all elements use SVG namespace)
+fn render_vnode_to_dom_svg(node : @luna.Node[@js.Any, String]) -> @js_dom.Node {
+  let doc = @js_dom.document()
+  match node {
+    @core.Text(content) => doc.createTextNode(content).as_node()
+    @core.DynamicText(getter) => {
+      let text_node = doc.createTextNode(getter())
+      let node_ref = text_node.as_node()
+      let _ = @resource.render_effect(fn() {
+        let new_text = getter()
+        node_ref.setTextContent(new_text)
+      })
+      node_ref
+    }
+    @core.Fragment(children) => {
+      let fragment = doc.createDocumentFragment()
+      for child in children {
+        fragment.as_node().appendChild(render_vnode_to_dom_svg(child)) |> ignore
+      }
+      fragment.as_node()
+    }
+    @core.Element(elem) => {
+      // Within SVG context, all elements use SVG namespace
+      let dom_elem = create_svg_element_ns(elem.tag)
+
+      // Apply attributes
+      for attr in elem.attrs {
+        let (name, value) = attr
+        apply_vattr(dom_elem, name, value)
+      }
+
+      // Append children (still in SVG context)
+      if elem.tag == "foreignObject" {
+        for child in elem.children {
+          dom_elem.as_node().appendChild(render_vnode_to_dom(child)) |> ignore
+        }
+      } else {
+        for child in elem.children {
+          dom_elem.as_node().appendChild(render_vnode_to_dom_svg(child))
+          |> ignore
+        }
+      }
+      dom_elem.as_node()
+    }
+    // For other node types, delegate to regular render
+    _ => render_vnode_to_dom(node)
+  }
+}
+
+///|
+/// Render VNode to DOM within MathML context (all elements use MathML namespace)
+fn render_vnode_to_dom_mathml(
+  node : @luna.Node[@js.Any, String],
+) -> @js_dom.Node {
+  let doc = @js_dom.document()
+  match node {
+    @core.Text(content) => doc.createTextNode(content).as_node()
+    @core.DynamicText(getter) => {
+      let text_node = doc.createTextNode(getter())
+      let node_ref = text_node.as_node()
+      let _ = @resource.render_effect(fn() {
+        let new_text = getter()
+        node_ref.setTextContent(new_text)
+      })
+      node_ref
+    }
+    @core.Fragment(children) => {
+      let fragment = doc.createDocumentFragment()
+      for child in children {
+        fragment.as_node().appendChild(render_vnode_to_dom_mathml(child))
+        |> ignore
+      }
+      fragment.as_node()
+    }
+    @core.Element(elem) => {
+      let dom_elem = create_mathml_element_ns(elem.tag)
+      for attr in elem.attrs {
+        let (name, value) = attr
+        apply_vattr(dom_elem, name, value)
+      }
+      for child in elem.children {
+        dom_elem.as_node().appendChild(render_vnode_to_dom_mathml(child))
+        |> ignore
+      }
+      dom_elem.as_node()
+    }
+    _ => render_vnode_to_dom(node)
+  }
+}
+
+///|
+/// Collect child nodes from a DOM node.
+/// For DocumentFragment, returns its children (before they get moved).
+/// For regular nodes, returns the node itself in an array.
+fn collect_dom_nodes(node : @js_dom.Node) -> Array[@js_dom.Node] {
+  // Check if it's a DocumentFragment (nodeType 11)
+  if node.nodeType() == 11 {
+    let children : Array[@js_dom.Node] = []
+    let child_nodes = node.childNodes()
+    for i in 0..<child_nodes.length() {
+      children.push(child_nodes[i])
+    }
+    children
+  } else {
+    [node]
+  }
+}
+
+///|
+/// Render VNode to DOM node (for client-side rendering after hydration)
+pub fn render_vnode_to_dom(node : @luna.Node[@js.Any, String]) -> @js_dom.Node {
+  let doc = @js_dom.document()
+  match node {
+    @core.Text(content) => doc.createTextNode(content).as_node()
+    @core.RawHtml(html) =>
+      // Create a template element and parse the HTML using JS
+      parse_html_to_node(html)
+    @core.DynamicText(getter) => {
+      let text_node = doc.createTextNode(getter())
+      let node_ref = text_node.as_node()
+      let _ = @resource.render_effect(fn() {
+        let new_text = getter()
+        node_ref.setTextContent(new_text)
+      })
+      node_ref
+    }
+    @core.Fragment(children) => {
+      let fragment = doc.createDocumentFragment()
+      for child in children {
+        fragment.as_node().appendChild(render_vnode_to_dom(child)) |> ignore
+      }
+      fragment.as_node()
+    }
+    @core.Element(elem) => {
+      let dom_elem = if is_svg_element(elem.tag) {
+        create_svg_element_ns(elem.tag)
+      } else if is_mathml_element(elem.tag) {
+        create_mathml_element_ns(elem.tag)
+      } else {
+        doc.createElement(elem.tag)
+      }
+
+      // Apply attributes
+      for attr in elem.attrs {
+        let (name, value) = attr
+        apply_vattr(dom_elem, name, value)
+      }
+
+      // Append children (with SVG context for nested elements)
+      for child in elem.children {
+        let child_dom = if is_svg_element(elem.tag) &&
+          elem.tag != "foreignObject" {
+          render_vnode_to_dom_svg(child)
+        } else if is_mathml_element(elem.tag) {
+          render_vnode_to_dom_mathml(child)
+        } else {
+          render_vnode_to_dom(child)
+        }
+        dom_elem.as_node().appendChild(child_dom) |> ignore
+      }
+      dom_elem.as_node()
+    }
+    @core.Show(condition=cond, child=child_fn) => {
+      let placeholder = doc.createComment("show")
+      // Track multiple nodes for Fragment support
+      let current_nodes : Array[@js_dom.Node] = []
+      let current_dispose : Ref[(() -> Unit)?] = Ref::new(None)
+      let is_first_render : Ref[Bool] = Ref::new(true)
+
+      // Create a fragment for initial render
+      let fragment = doc.createDocumentFragment()
+      let fragment_node = fragment.as_node()
+
+      // Initial render - check condition and render if true
+      let initial_show = @resource.untracked(fn() { cond() })
+      if initial_show {
+        let (rendered, dispose) = @resource.untracked(fn() {
+          render_vnode_to_dom_with_dispose(child_fn())
+        })
+        current_dispose.val = Some(dispose)
+        // Collect actual nodes before inserting (Fragment children get moved)
+        let nodes_to_track = collect_dom_nodes(rendered)
+        fragment_node.appendChild(rendered) |> ignore
+        for node in nodes_to_track {
+          current_nodes.push(node)
+        }
+      }
+      // Append placeholder at end
+      fragment_node.appendChild(placeholder) |> ignore
+
+      // Set up effect for updates (skip first run since we already rendered)
+      let _ = @resource.render_effect(fn() {
+        let should_show = cond()
+        if is_first_render.val {
+          is_first_render.val = false
+          return
+        }
+        let has_nodes = current_nodes.length() > 0
+        match (should_show, has_nodes) {
+          (true, false) =>
+            if placeholder.parentNode() is Some(par) {
+              // Use untracked to prevent child signals from being registered
+              // as dependencies of this Show's effect. This prevents infinite
+              // loops when nested Show components access signals.
+              let (rendered, dispose) = @resource.untracked(fn() {
+                render_vnode_to_dom_with_dispose(child_fn())
+              })
+              current_dispose.val = Some(dispose)
+              // Collect actual nodes before inserting (Fragment children get moved)
+              let nodes_to_track = collect_dom_nodes(rendered)
+              par.insertBefore(rendered, Some(placeholder)) |> ignore
+              for node in nodes_to_track {
+                current_nodes.push(node)
+              }
+            }
+          (false, true) => {
+            match current_dispose.val {
+              Some(dispose) => {
+                dispose()
+                current_dispose.val = None
+              }
+              None => ()
+            }
+            // Remove all tracked nodes
+            for node in current_nodes {
+              if node.parentNode() is Some(par) {
+                par.removeChild(node) |> ignore
+              }
+            }
+            current_nodes.clear()
+          }
+          _ => ()
+        }
+      })
+      fragment_node
+    }
+    @core.For(render=render_fn) => {
+      // Use a comment as a placeholder/marker for where to insert items
+      let placeholder = doc.createComment("for")
+      let entries : Ref[Array[@element.ItemEntry[@luna.Node[@js.Any, String]]]] = Ref::new([],
+      )
+      let is_first_render : Ref[Bool] = Ref::new(true)
+
+      // Create a fragment for initial render
+      let fragment = doc.createDocumentFragment()
+      let fragment_node = fragment.as_node()
+
+      // Initial render - use untracked to prevent dependency tracking
+      let initial_items = @resource.untracked(fn() { render_fn() })
+      for item in initial_items {
+        let (rendered, dispose) = @resource.untracked(fn() {
+          render_vnode_to_dom_with_dispose(item)
+        })
+        let nodes_to_track = collect_dom_nodes(rendered)
+        if nodes_to_track.length() == 0 {
+          let empty = doc.createComment("empty")
+          fragment_node.appendChild(empty) |> ignore
+          entries.val.push(
+            @element.ItemEntry::new_with_nodes_and_dispose(
+              item,
+              [empty],
+              dispose,
+            ),
+          )
+        } else {
+          entries.val.push(
+            @element.ItemEntry::new_with_nodes_and_dispose(
+              item, nodes_to_track, dispose,
+            ),
+          )
+          fragment_node.appendChild(rendered) |> ignore
+        }
+      }
+      // Append placeholder at end
+      fragment_node.appendChild(placeholder) |> ignore
+
+      // Set up effect for updates (skip first run since we already rendered)
+      let _ = @resource.render_effect(fn() {
+        let new_items = render_fn()
+        if is_first_render.val {
+          is_first_render.val = false
+          return
+        }
+
+        // Use untracked to prevent child signals from being registered
+        // as dependencies of this For's effect
+        @resource.untracked(fn() {
+          @element.reconcile_for_each_with_dispose(
+            entries,
+            placeholder,
+            new_items,
+            fn(item, _idx) { render_vnode_to_dom_with_dispose(item) },
+          )
+        })
+      })
+      fragment_node
+    }
+    @core.Component(render=render_fn) => render_vnode_to_dom(render_fn())
+    @core.Island(island) => {
+      // For client-side rendering, create a wrapper div with island attributes
+      // and render children inside
+      let wrapper = doc.createElement("div")
+      wrapper.setAttribute("luna:id", island.id)
+      wrapper.setAttribute("luna:url", island.url)
+      wrapper.setAttribute("luna:state", island.state)
+      wrapper.setAttribute("luna:client-trigger", island.trigger.to_string())
+      for child in island.children {
+        wrapper.as_node().appendChild(render_vnode_to_dom(child)) |> ignore
+      }
+      wrapper.as_node()
+    }
+    @core.WcIsland(wc_island) => {
+      // For client-side rendering, create the custom element with shadow DOM
+      let wrapper = doc.createElement(wc_island.name)
+      wrapper.setAttribute("data-state", wc_island.state)
+      wrapper.setAttribute("data-trigger", wc_island.trigger.to_string())
+      // Note: Shadow DOM would be created by the custom element itself
+      // For CSR, we just create the host element with data attributes
+      for child in wc_island.children {
+        wrapper.as_node().appendChild(render_vnode_to_dom(child)) |> ignore
+      }
+      wrapper.as_node()
+    }
+    @core.InternalRef(iref) =>
+      // For client-side rendering, create appropriate element based on wc flag
+      if iref.wc {
+        // Web Components island - extract name from URL
+        let name = extract_wc_name_from_url(iref.url)
+        let wrapper = doc.createElement(name)
+        wrapper.setAttribute("luna:wc-url", iref.url)
+        wrapper.setAttribute("luna:wc-state", iref.state)
+        wrapper.setAttribute("luna:wc-trigger", iref.trigger.to_string())
+        for child in iref.children {
+          wrapper.as_node().appendChild(render_vnode_to_dom(child)) |> ignore
+        }
+        wrapper.as_node()
+      } else {
+        // Regular island
+        let wrapper = doc.createElement("div")
+        let id = iref.url.replace(old="/", new="_").replace(old=".", new="_")
+        wrapper.setAttribute("luna:id", id)
+        wrapper.setAttribute("luna:url", iref.url)
+        wrapper.setAttribute("luna:state", iref.state)
+        wrapper.setAttribute("luna:client-trigger", iref.trigger.to_string())
+        for child in iref.children {
+          wrapper.as_node().appendChild(render_vnode_to_dom(child)) |> ignore
+        }
+        wrapper.as_node()
+      }
+    @core.Async(async_node) =>
+      // For client-side rendering, render fallback initially
+      // Async replacement would be handled separately
+      render_vnode_to_dom((async_node.fallback)())
+    @core.ErrorBoundary(boundary) =>
+      // Client-side ErrorBoundary with reset support
+      render_error_boundary_to_dom(boundary)
+    @core.Switch(switch_node) =>
+      // Client-side Switch rendering
+      render_switch_to_dom(switch_node)
+  }
+}
+
+///|
+/// Render VNode to DOM and return a disposer for cleanup
+pub fn render_vnode_to_dom_with_dispose(
+  node : @luna.Node[@js.Any, String],
+) -> (@js_dom.Node, () -> Unit) {
+  @resource.create_root_with_dispose(fn() { render_vnode_to_dom(node) })
+}
+
+///|
+/// Apply VAttr to DOM element
+fn apply_vattr(
+  elem : @js_dom.Element,
+  name : String,
+  value : @luna.Attr[@js.Any, String],
+) -> Unit {
+  match value {
+    @core.VStatic(s) =>
+      if s != "__remove__" {
+        if name == "class" || name == "className" {
+          elem.setClassName(s)
+        } else if name == "__innerHTML" {
+          elem.as_any()._set("innerHTML", @js.any(s)) |> ignore
+        } else if name == "value" {
+          elem.as_any()._set("value", @js.any(s)) |> ignore
+        } else if name == "checked" {
+          elem.as_any()._set("checked", @js.any(s == "true" || s == ""))
+          |> ignore
+        } else if name == "disabled" {
+          if s == "true" || s == "" {
+            elem.setAttribute("disabled", "")
+          } else {
+            elem.removeAttribute("disabled")
+          }
+        } else if s == "" {
+          elem.setAttribute(name, "")
+        } else {
+          elem.setAttribute(name, s)
+        }
+      }
+    @core.VDynamic(getter) => {
+      let _ = @resource.render_effect(fn() {
+        let new_value = getter()
+        if new_value == "__remove__" {
+          elem.removeAttribute(name)
+        } else if name == "class" || name == "className" {
+          elem.setClassName(new_value)
+        } else if name == "__innerHTML" {
+          elem.as_any()._set("innerHTML", @js.any(new_value)) |> ignore
+        } else if name == "value" {
+          elem.as_any()._set("value", @js.any(new_value)) |> ignore
+        } else if name == "checked" {
+          elem
+          .as_any()
+          ._set("checked", @js.any(new_value == "true" || new_value == ""))
+          |> ignore
+        } else if name == "disabled" {
+          if new_value == "true" || new_value == "" {
+            elem.setAttribute("disabled", "")
+          } else {
+            elem.removeAttribute("disabled")
+          }
+        } else {
+          elem.setAttribute(name, new_value)
+        }
+      })
+    }
+    @core.VHandler(handler) => {
+      let event_name = extract_event_name(name)
+      let callback = handler.get_callback()
+      // Pass event to callback
+      let wrapper : (@js.Any) -> Unit = fn(event) { callback(event) }
+      elem
+      .as_event_target()
+      .addEventListener(event_name, @js.any(wrapper).cast())
+    }
+    @core.VAction(_) =>
+      // VAction without dispatcher does nothing in CSR context
+      // Actions are meant to be bound during action-based hydration
+      ()
+  }
+}
+
+///|
+/// Convenience function: render VNode to DOM and mount
+pub fn render_vnode(
+  container : @js_dom.Element,
+  node : @luna.Node[@js.Any, String],
+) -> () -> Unit {
+  container.as_node().setTextContent("")
+  let (dom_node, dispose) = render_vnode_to_dom_with_dispose(node)
+  container.as_node().appendChild(dom_node) |> ignore
+  dispose
+}
+
+///|
+/// Render ErrorBoundary to DOM with error catching and reset support
+fn render_error_boundary_to_dom(
+  boundary : @luna.VErrorBoundary[@js.Any, String],
+) -> @js_dom.Node {
+  let doc = @js_dom.document()
+  let container = doc.createDocumentFragment()
+  let container_node = container.as_node()
+  let placeholder = doc.createComment("error-boundary")
+
+  // State for error handling
+  let error_state : Ref[Error?] = Ref::new(None)
+  let content_nodes : Array[@js_dom.Node] = []
+  let reset_ref : Ref[() -> Unit] = Ref::new(fn() { () })
+  let current_dispose : Ref[(() -> Unit)?] = Ref::new(None)
+
+  // Reset function clears error and re-renders children
+  let reset = fn() {
+    error_state.val = None
+    // Clear current content
+    match current_dispose.val {
+      Some(dispose) => {
+        dispose()
+        current_dispose.val = None
+      }
+      None => ()
+    }
+    for node in content_nodes {
+      if node.parentNode() is Some(par) {
+        par.removeChild(node) |> ignore
+      }
+    }
+    content_nodes.clear()
+    // Re-render children
+    try {
+      let (child_node, dispose) = render_vnode_to_dom_with_dispose(
+        (boundary.children)(),
+      )
+      current_dispose.val = Some(dispose)
+      let nodes_to_track = collect_dom_nodes(child_node)
+      if placeholder.parentNode() is Some(parent) {
+        parent.insertBefore(child_node, Some(placeholder)) |> ignore
+      } else {
+        container_node.appendChild(child_node) |> ignore
+      }
+      for node in nodes_to_track {
+        content_nodes.push(node)
+      }
+    } catch {
+      err => {
+        error_state.val = Some(err)
+        try {
+          let (fallback_node, dispose) = render_vnode_to_dom_with_dispose(
+            (boundary.fallback)(err, reset_ref.val),
+          )
+          current_dispose.val = Some(dispose)
+          let nodes_to_track = collect_dom_nodes(fallback_node)
+          if placeholder.parentNode() is Some(parent) {
+            parent.insertBefore(fallback_node, Some(placeholder)) |> ignore
+          } else {
+            container_node.appendChild(fallback_node) |> ignore
+          }
+          for node in nodes_to_track {
+            content_nodes.push(node)
+          }
+        } catch {
+          _ => () // Ignore errors in fallback
+        }
+      }
+    }
+  }
+  reset_ref.val = reset
+
+  // Initial render
+  try {
+    let (child_node, dispose) = render_vnode_to_dom_with_dispose(
+      (boundary.children)(),
+    )
+    current_dispose.val = Some(dispose)
+    let nodes_to_track = collect_dom_nodes(child_node)
+    container_node.appendChild(child_node) |> ignore
+    for node in nodes_to_track {
+      content_nodes.push(node)
+    }
+  } catch {
+    err => {
+      error_state.val = Some(err)
+      try {
+        let (fallback_node, dispose) = render_vnode_to_dom_with_dispose(
+          (boundary.fallback)(err, reset_ref.val),
+        )
+        current_dispose.val = Some(dispose)
+        let nodes_to_track = collect_dom_nodes(fallback_node)
+        container_node.appendChild(fallback_node) |> ignore
+        for node in nodes_to_track {
+          content_nodes.push(node)
+        }
+      } catch {
+        _ => () // Ignore errors in fallback
+      }
+    }
+  }
+  container_node.appendChild(placeholder) |> ignore
+  container_node
+}
+
+///|
+/// Render Switch to DOM with reactive updates
+fn render_switch_to_dom(
+  switch_node : @luna.VSwitch[@js.Any, String],
+) -> @js_dom.Node {
+  let doc = @js_dom.document()
+  let placeholder = doc.createComment("switch")
+  let current_nodes : Array[@js_dom.Node] = []
+  let current_dispose : Ref[(() -> Unit)?] = Ref::new(None)
+  let mut current_case_index : Int = -1 // -1 means fallback, -2 means no match
+
+  // Helper to find which case matches
+  let find_matching_case = fn() -> Int {
+    for i, case_ in switch_node.cases {
+      if (case_.when)() {
+        return i
+      }
+    }
+    // No case matched
+    if switch_node.fallback is Some(_) {
+      return -1 // fallback
+    }
+    -2 // no match, no fallback
+  }
+
+  // Initial render
+  let initial_case = find_matching_case()
+  current_case_index = initial_case
+  let fragment = doc.createDocumentFragment()
+  let fragment_node = fragment.as_node()
+  if initial_case >= 0 {
+    let (node, dispose) = render_vnode_to_dom_with_dispose(
+      (switch_node.cases[initial_case].render)(),
+    )
+    current_dispose.val = Some(dispose)
+    let nodes_to_track = collect_dom_nodes(node)
+    fragment_node.appendChild(node) |> ignore
+    for n in nodes_to_track {
+      current_nodes.push(n)
+    }
+  } else if initial_case == -1 {
+    match switch_node.fallback {
+      Some(fallback_fn) => {
+        let (node, dispose) = render_vnode_to_dom_with_dispose(fallback_fn())
+        current_dispose.val = Some(dispose)
+        let nodes_to_track = collect_dom_nodes(node)
+        fragment_node.appendChild(node) |> ignore
+        for n in nodes_to_track {
+          current_nodes.push(n)
+        }
+      }
+      None => ()
+    }
+  }
+  fragment_node.appendChild(placeholder) |> ignore
+
+  // Set up effect for reactive updates
+  let is_first_render : Ref[Bool] = Ref::new(true)
+  let _ = @resource.render_effect(fn() {
+    let new_case = find_matching_case()
+
+    // Skip first render
+    if is_first_render.val {
+      is_first_render.val = false
+      return
+    }
+
+    // If case hasn't changed, do nothing
+    if new_case == current_case_index {
+      return
+    }
+
+    // Dispose and remove current nodes
+    match current_dispose.val {
+      Some(dispose) => {
+        dispose()
+        current_dispose.val = None
+      }
+      None => ()
+    }
+    for node in current_nodes {
+      if node.parentNode() is Some(par) {
+        par.removeChild(node) |> ignore
+      }
+    }
+    current_nodes.clear()
+
+    // Render new content
+    // Use untracked to prevent child signals from being registered
+    // as dependencies of this Switch's effect
+    if new_case >= 0 {
+      let (node, dispose) = @resource.untracked(fn() {
+        render_vnode_to_dom_with_dispose((switch_node.cases[new_case].render)())
+      })
+      current_dispose.val = Some(dispose)
+      if placeholder.parentNode() is Some(par) {
+        let nodes_to_track = collect_dom_nodes(node)
+        par.insertBefore(node, Some(placeholder)) |> ignore
+        for n in nodes_to_track {
+          current_nodes.push(n)
+        }
+      }
+    } else if new_case == -1 {
+      match switch_node.fallback {
+        Some(fallback_fn) => {
+          let (node, dispose) = @resource.untracked(fn() {
+            render_vnode_to_dom_with_dispose(fallback_fn())
+          })
+          current_dispose.val = Some(dispose)
+          if placeholder.parentNode() is Some(par) {
+            let nodes_to_track = collect_dom_nodes(node)
+            par.insertBefore(node, Some(placeholder)) |> ignore
+            for n in nodes_to_track {
+              current_nodes.push(n)
+            }
+          }
+        }
+        None => ()
+      }
+    }
+    current_case_index = new_case
+  })
+  fragment_node
+}
+
+///|
+/// Parse HTML string to DOM Node using template element
+/// Used for RawHtml VNode - when you need a detached DOM node from HTML
+extern "js" fn parse_html_to_node(html : String) -> @js_dom.Node =
+  #| (html) => {
+  #|   const template = document.createElement('template');
+  #|   template.innerHTML = html;
+  #|   return template.content.cloneNode(true);
+  #| }
+
+///|
+/// Set innerHTML directly on an element (fast for bulk insertion)
+extern "js" fn set_inner_html(el : @js_dom.Element, html : String) -> Unit =
+  #| (el, html) => { el.innerHTML = html; }
+
+// =============================================================================
+// Static Content - innerHTML-based fast rendering for static content
+// =============================================================================
+//
+// Static content uses innerHTML for maximum performance:
+// - Browser's native HTML parser is highly optimized
+// - 2-3x faster than createElement for 100+ elements
+// - No hydration or reconciliation needed
+//
+// SSR Integration:
+// - Server renders static HTML (no special markers)
+// - Client receives pre-rendered content - nothing to do
+// - For CSR, use inject_static() or static_block()
+//
+
+///|
+/// Inject static content directly into a container using innerHTML
+///
+/// This is the fastest way to render static content:
+/// - Uses innerHTML for one-time bulk insertion (2-3x faster than createElement)
+/// - Container becomes the static content holder
+/// - Content is never updated after initial render
+///
+/// Works seamlessly with SSR:
+/// - Server: @render.render_to_string(node) → HTML in response
+/// - Client: inject_static(container, node) for CSR parts
+///
+/// Example:
+/// ```moonbit nocheck
+/// let container = doc.getElementById("static-header")
+/// inject_static(container, header_vnode())
+/// ```
+pub fn inject_static(
+  container : @js_dom.Element,
+  node : @luna.Node[Unit, String],
+) -> Unit {
+  let html = @render.render_to_string(node).html
+  set_inner_html(container, html)
+}
+
+///|
+/// Inject pre-rendered HTML directly into a container
+///
+/// Use when HTML is already available (e.g., from SSR cache or fetch).
+/// This is the fastest path - no VNode rendering needed.
+///
+/// Security: Ensure HTML is trusted/sanitized before injection.
+pub fn inject_static_html(container : @js_dom.Element, html : String) -> Unit {
+  set_inner_html(container, html)
+}
+
+///|
+/// Create a static block that can be composed with dynamic content
+///
+/// Returns a wrapper element with static content injected via innerHTML.
+/// Use when you need to compose static content within a dynamic component.
+///
+/// Example:
+/// ```moonbit nocheck
+/// fn my_page() -> DomNode {
+///   let header = static_block("header", header_vnode())
+///   let footer = static_block("footer", footer_vnode())
+///   div([
+///       header, // Static - never updates
+///       dynamic_content(), // Dynamic - updates on signal change
+///       footer,
+///     ], // Static - never updates
+///   )
+/// }
+/// ```
+///
+/// Note: Creates a wrapper element. Use inject_static() if you want
+/// to avoid the wrapper and have a dedicated container.
+pub fn static_block(
+  tag : String,
+  node : @luna.Node[Unit, String],
+) -> @element.DomNode {
+  let doc = @js_dom.document()
+  let wrapper = doc.createElement(tag)
+  let html = @render.render_to_string(node).html
+  set_inner_html(wrapper, html)
+  @element.static_node(wrapper.as_node())
+}
+
+///|
+/// Create a static div block (convenience wrapper for static_block)
+pub fn static_div(node : @luna.Node[Unit, String]) -> @element.DomNode {
+  static_block("div", node)
+}
+
+///|
+/// Create a static span block (convenience wrapper for static_block)
+pub fn static_span(node : @luna.Node[Unit, String]) -> @element.DomNode {
+  static_block("span", node)
+}

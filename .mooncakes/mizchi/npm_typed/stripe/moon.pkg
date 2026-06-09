@@ -1,0 +1,8 @@
+import {
+  "mizchi/js",
+  "mizchi/js/core",
+}
+
+warnings = "-24"
+
+supported_targets = "js"

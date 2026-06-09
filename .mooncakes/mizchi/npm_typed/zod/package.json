@@ -1,0 +1,7 @@
+{
+  "name": "@npm_typed/zod",
+  "private": true,
+  "peerDependencies": {
+    "zod": "^4.0.0"
+  }
+}

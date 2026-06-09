@@ -1,0 +1,7 @@
+{
+  "name": "@npm_typed/vite",
+  "private": true,
+  "peerDependencies": {
+    "vite": "^8.0.0-beta.0"
+  }
+}

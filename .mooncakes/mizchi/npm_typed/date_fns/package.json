@@ -1,0 +1,7 @@
+{
+  "name": "@npm_typed/date_fns",
+  "private": true,
+  "peerDependencies": {
+    "date-fns": "^4.0.0"
+  }
+}

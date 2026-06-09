@@ -1,0 +1,7 @@
+{
+  "name": "@npm_typed/vitest",
+  "private": true,
+  "peerDependencies": {
+    "vitest": "^3.0.0"
+  }
+}

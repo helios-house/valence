@@ -1,0 +1,7 @@
+{
+  "name": "@npm_typed/react_element",
+  "private": true,
+  "peerDependencies": {
+    "react": "^19.0.0"
+  }
+}

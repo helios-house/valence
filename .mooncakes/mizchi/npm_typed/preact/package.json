@@ -1,0 +1,7 @@
+{
+  "name": "@npm_typed/preact",
+  "private": true,
+  "peerDependencies": {
+    "preact": "^10.0.0"
+  }
+}

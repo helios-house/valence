@@ -1,0 +1,8 @@
+import {
+  "mizchi/js",
+  "mizchi/js/core",
+  "mizchi/js/browser/dom",
+  "mizchi/js/builtins/regexp",
+}
+
+supported_targets = "js"
