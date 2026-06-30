@@ -1,3 +1,6 @@
+///|
+using @test {assert_eq}
+
 //
 
 ///|
@@ -94,37 +97,49 @@ test "render style element" {
 }
 
 ///|
-test "render island" {
-  let node = @luna.island(
-    "counter",
+test "render trusted script and style helpers" {
+  let node = fragment([
+    script_trusted(unsafe_trusted_script("console.log(1)")),
+    style_trusted(unsafe_trusted_style("body { color: red; }")),
+  ])
+  let html = render(node)
+  assert_true(html.contains("<script>console.log(1)</script>"))
+  assert_true(html.contains("<style>body { color: red; }</style>"))
+}
+
+///|
+test "render wc_island" {
+  let node = @luna.wc_island(
+    "wc-counter",
     "/components/counter.js",
+    "",
     "{\"count\":0}",
     [text("Loading...")],
   )
   let html = render(node)
-  assert_true(html.contains("luna:id=\"counter\""))
-  assert_true(html.contains("luna:url=\"/components/counter.js\""))
+  assert_true(html.contains("luna:wc-url=\"/components/counter.js\""))
   assert_true(html.contains("Loading..."))
 }
 
 ///|
-test "render island with visible trigger" {
-  let node = @luna.island(
-    "lazy",
+test "render wc_island with visible trigger" {
+  let node = @luna.wc_island(
+    "wc-lazy",
     "/components/lazy.js",
+    "",
     "{}",
     [text("Lazy content")],
     trigger=@core.Visible,
   )
   let html = render(node)
-  assert_true(html.contains("luna:client-trigger=\"visible\""))
+  assert_true(html.contains("luna:wc-trigger=\"visible\""))
 }
 
 ///|
-test "render_with_preloads collects island URLs" {
+test "render_with_preloads collects wc_island URLs" {
   let node = div([
-    @luna.island("a", "/a.js", "{}", [text("A")]),
-    @luna.island("b", "/b.js", "{}", [text("B")]),
+    @luna.wc_island("wc-a", "/a.js", "", "{}", [text("A")]),
+    @luna.wc_island("wc-b", "/b.js", "", "{}", [text("B")]),
   ])
   let result = render_with_preloads(node)
   assert_eq(result.preload_urls.length(), 2)
@@ -192,20 +207,21 @@ test "render error_boundary with nested elements" {
 }
 
 ///|
-test "render error_boundary with island inside" {
+test "render error_boundary with wc_island inside" {
   let node : @luna.Node[Unit, String] = @luna.error_boundary(
     children=fn() {
       div([
-        @luna.island("counter", "/components/counter.js", "{\"count\":0}", [
-          text("Loading..."),
-        ]),
+        @luna.wc_island(
+          "wc-counter", "/components/counter.js", "", "{\"count\":0}", [
+            text("Loading..."),
+          ],
+        ),
       ])
     },
     fallback=fn(_err, _reset) { text("Error") },
   )
   let html = render(node)
-  assert_true(html.contains("luna:id=\"counter\""))
-  assert_true(html.contains("luna:url=\"/components/counter.js\""))
+  assert_true(html.contains("luna:wc-url=\"/components/counter.js\""))
 }
 
 ///|
@@ -249,12 +265,12 @@ test "render error_boundary with fragment" {
 }
 
 ///|
-test "render_with_preloads error_boundary collects island URLs" {
+test "render_with_preloads error_boundary collects wc_island URLs" {
   let node : @luna.Node[Unit, String] = @luna.error_boundary(
     children=fn() {
       div([
-        @luna.island("a", "/a.js", "{}", [text("A")]),
-        @luna.island("b", "/b.js", "{}", [text("B")]),
+        @luna.wc_island("wc-a", "/a.js", "", "{}", [text("A")]),
+        @luna.wc_island("wc-b", "/b.js", "", "{}", [text("B")]),
       ])
     },
     fallback=fn(_err, _reset) { text("Error") },

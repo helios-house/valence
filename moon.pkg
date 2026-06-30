@@ -1,6 +1,7 @@
 import {
   "mizchi/luna/dom" @element,
   "mizchi/signals" @resource,
+  "mizchi/js/browser/dom" @dom,
 }
 
 options(

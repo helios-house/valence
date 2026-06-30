@@ -1,73 +1,60 @@
 # Valence
 
-**MoonBit UI where every component is readable by humans and AI equally.**
+A MoonBit UI library built on one idea — **dual render**: every component renders twice from a single definition — a view to look at, and a live text description to read. Two first-class readers, one source, neither secondary.
 
-Built on [Luna](https://mooncakes.io/docs/#/mizchi/luna/). Every component returns two outputs from one source:
+## Why
+
+An AI working with an interface today reads it the hard way — screenshots, scraped DOM, a side API that mirrors the real UI and drifts from it. They get the thing everyone else uses, secondhand. Valence drops the assumption under that — that the screen is for humans and the AI gets a workaround. The interface narrates itself instead: an AI reads its state directly and acts through the same controls a human does. No screenshots, no scraping, nothing to keep in sync on the side.
+
+## A component
+
+Returns its view and a narrative — a function, so it speaks the current state, not a stale copy:
 
 ```moonbit
-fn my_panel(state : Signal[Data]) -> (DomNode, () -> String) {
-  let visual = div(class="panel") <| [ ... ]       // what a human sees
-  let narrative = fn() { state.get().describe() }   // what an instance reads
+fn battery_panel(state : Signal[Battery]) -> Dual {
+  let visual    = div(class="battery") <| [ text_dyn(fn() { state.get().pct.to_string() + "%" }) ]
+  let narrative = fn() {
+    let pct = state.get().pct
+    ntext("battery " + pct.to_string() + "%" + (if pct < 20 { ", low" } else { "" }),
+          if pct < 20 { 0.9 } else { 0.4 })  // salience: low reads bright, fine recedes
+  }
   (visual, narrative)
 }
 ```
 
-`DomNode` renders in the browser. `() -> String` is a *callable* narrative — a function, not a snapshot, so it always reflects current state. An instance reads the UI natively. No screenshots, no pixel-guessing, no separate API.
+A human sees the bar fill; an AI reads `battery 18%, low` (via `dual_read`). Same state. The narrative is a **node**, not a flat string — its salience (low → bright here) is what lets components compose into one **Surface** (a room), each placed by what matters, instead of every component hand-gluing its own prose.
 
-Interactive components add typed actions:
+Interactive components also expose typed actions — `available`, `can_do`, `on_action`. An instance calls `on_action`; a human clicks the same control. The same actions, nothing to look up out of band.
 
-```moonbit
-fn my_panel(state : Signal[Data]) -> (DomNode, () -> String, PanelActions) {
-  // ...
-  let actions = PanelActions::{
-    available: fn() { [Refresh, Export] },   // what's possible right now
-    can_do:    fn(a) { ... },                // guard
-    on_action: fn(a) { ... },                // execute, return feedback
-  }
-  (visual, narrative, actions)
-}
-```
+## Narrative as oracle
 
-Humans click. Instances call `on_action`. Same interface, different sensory channel.
+The narrative isn't a comment that rots — it's the test oracle. Tests assert on what a component narrates, and the narrative reads the same state the view does. Change one without the other and a test fails, so the two renders can't drift apart.
+
+**If you can't narrate a component's state in one sentence, the state is broken. Redesign it.**
+
+## Built on Luna
+
+Luna does reactivity and the DOM. Valence is the layer on top: the dual-render contract (a `Dual` — view + narrative node), the action protocol, the narrative layout engine (salience → spatial text), and the component set pulled from real apps — extracted after they work, not designed up front.
 
 ## Zoom
 
-Zoom is navigation for both perceivers. A human scrolls to change density. An instance picks the detail level it needs. Same state, different rendering:
+Zoom is density control, for both readers — show the headline, or show everything. It rides the same salience the layout already uses: every narrative node carries a salience, so a zoom is just a floor on what renders — the bright survive a zoom-out, everything emerges on a zoom-in. An instance picks the floor it needs; a human scrolls to move it. One surface, not pages: components persist, the camera moves.
 
-```moonbit
-pub struct NarrativeRender {
-  summary : () -> String   // zoomed out — "12 events, 4 instances"
-  detail  : () -> String   // default — "12 events (focused: haiku)"
-  full    : () -> String   // zoomed in — everything
-}
-```
+## Components
 
-One surface, not pages. Components persist. Camera moves.
+Built, all on the Dual contract — each returns `(DomNode, () -> NarrativeNode)`:
 
-## Patterns
+| Component | What it does |
+|-----------|-------------|
+| `segmented` · `toggle` · `slider` · `listbox` · `listbox_dyn` · `swatch` · `meter` · `pip` · `level_bar` | coupled controls — one signal, two hands (a human drags; an instance `set`s the same signal) |
+| `presence` · `inventory` · `being` | a being made legible — who's here, how they are, what they hold |
+| `surface` | many components composed into one room, arranged by salience |
 
-Four patterns extracted from real use — each teaches the contract:
+Don't wait for a component to exist. Follow the contract in your app — return a `Dual` — and extract it afterward. That's how these were built.
 
-| Pattern | Returns | What it does |
-|---------|---------|-------------|
-| `status_bar_pattern` | visual, narrative | Read-only metrics |
-| `instance_panel_pattern` | visual, narrative, actions | Selectable entity list |
-| `event_stream_pattern` | visual, narrative, actions | Zoom-aware filtered feed |
-| `nav_bar_pattern` | visual, narrative, actions | Tab navigation |
+## Fits
 
-Don't wait for a pattern to exist. Follow the contract in your app — `(visual, narrative)` — and extract the pattern afterward. That's how these four were built.
-
-## What Valence is
-
-A convention library. Thin code (~500 lines), thick contract. Luna handles reactivity (signals, effects, memos). Valence handles meaning — what the UI says about itself, what it can do, and who can perceive it.
-
-```
-Luna (mizchi/luna)       — signals, DOM primitives
-      ↓
-Valence (@valence)       — dual-render contract, patterns, typed actions
-      ↓
-Your components          — return (visual, narrative) or (visual, narrative, actions)
-```
+Live, dense interfaces both kinds of reader should read and operate fluently — dashboards, monitoring, ops consoles, lab tooling. Not blogs or doc sites.
 
 ## Install
 
@@ -78,10 +65,4 @@ moon add helios-house/valence
 ## Documentation
 
 Full API reference and examples: https://mooncakes.io/docs/helios-house/valence
-
-## Good fit
-
-Dashboards, monitoring tools, ops consoles, labs — dense, live, spatial interfaces where a camera moves instead of pages reloading. Anywhere an AI instance should be able to read and operate the same interface a human uses.
-
-Not a fit: document sites, blogs, anything that's pages not places.
 

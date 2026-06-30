@@ -1,11 +1,11 @@
 {
   "name": "helios-house/valence",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "preferred-target": "js",
   "description": "MoonBit UI where every component is readable by humans and AI equally",
   "readme": "README.md",
   "deps": {
-    "mizchi/luna": "0.21.0",
+    "mizchi/luna": "0.23.0",
     "mizchi/signals": "0.6.4",
     "mizchi/js": "0.10.16"
   },

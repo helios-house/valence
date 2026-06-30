@@ -33,6 +33,19 @@
  *   node luna/scripts/vup.mjs patch --release    # write, commit, tag (per-package tags)
  *   node luna/scripts/vup.mjs patch --release --push   # release then push
  *
+ * Idempotency:
+ *   For semver bumps (patch/minor/major), the plan is computed against the
+ *   HEAD commit. If moon.mod.json in the working tree is already ahead of
+ *   HEAD (= a previous `vup patch` already ran but wasn't committed), the
+ *   script REUSES that pending version instead of bumping again. This means
+ *   the documented two-step flow
+ *
+ *     just vup patch              # bump + per-package CHANGELOG
+ *     just vup patch --release    # commit + tag (no double-bump)
+ *
+ *   is safe: the second call detects the pending bump and only commits/tags.
+ *   Explicit `vup X.Y.Z` always sets to that exact version.
+ *
  * Tags created by --release are the mooncakes tags:
  *   luna-v<luna_version>
  *   luna_components-v<luna_components_version>
@@ -144,32 +157,72 @@ function writeJson(absPath, json, dryRun) {
 // =============================================================================
 
 /**
- * Build a plan: { id, currentMoon, newMoon } per package.
- * For an explicit version, all entries get that version.
- * For a semver bump, each is incremented relative to its OWN current version.
+ * Read the version recorded for `path` in the current HEAD commit, so we
+ * can tell whether a moon.mod.json has already been bumped relative to HEAD.
+ * Returns null if HEAD does not have the file (new package) or git is unhappy.
+ */
+function readHeadVersion(path) {
+  try {
+    const blob = execSync(`git show HEAD:${path}`, {
+      cwd: rootDir,
+      encoding: "utf-8",
+      stdio: ["ignore", "pipe", "ignore"],
+    });
+    return JSON.parse(blob).version ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Build a plan: { id, currentMoon, newMoon, alreadyBumped } per package.
+ *
+ * For an explicit version, all entries get that version. If the working tree
+ * already records that version, the entry is flagged `alreadyBumped` so we
+ * skip the write.
+ *
+ * For a semver bump, we compare moon.mod.json with HEAD:
+ *   - clean (working == HEAD):  newMoon = incrementVersion(working, kind)
+ *   - already bumped (working != HEAD): newMoon = working, no further bump
+ *
+ * This makes `vup patch --release` idempotent: running `just vup patch` and
+ * then `just vup patch --release` does NOT double-bump. The second call sees
+ * the pending bump in the working tree and just reuses it.
  */
 function buildPlan(spec) {
   return PACKAGES.map(pkg => {
     const moonAbs = join(rootDir, pkg.moonModPath);
     const moon = readJson(moonAbs);
     const currentMoon = moon.version;
-    const newMoon = spec.kind === "explicit"
-      ? spec.version
-      : incrementVersion(currentMoon, spec.kind);
+    const headMoon = readHeadVersion(pkg.moonModPath);
+    const alreadyBumped = headMoon !== null && headMoon !== currentMoon;
+
+    let newMoon;
+    if (spec.kind === "explicit") {
+      newMoon = spec.version;
+    } else if (alreadyBumped) {
+      // Working tree is ahead of HEAD; trust it instead of bumping again.
+      newMoon = currentMoon;
+    } else {
+      newMoon = incrementVersion(currentMoon, spec.kind);
+    }
     return {
       ...pkg,
       moonAbs,
       moon,
       currentMoon, newMoon,
+      headMoon,
+      alreadyBumped,
     };
   });
 }
 
 function applyPlan(plan, dryRun) {
   // Inter-dep refs to update inside other mooncakes' moon.mod.json:
-  //   sol depends on astra
+  //   sol depends on astra and luna
   //   sol_adapter_cloudflare depends on sol
   //   sol_adapter_node depends on sol
+  //   astra depends on luna
   //   luna_components depends on luna
   const astraEntry = plan.find(p => p.id === "astra");
   const lunaEntry = plan.find(p => p.id === "luna");
@@ -197,6 +250,7 @@ function applyPlan(plan, dryRun) {
 
     if (entry.id === "sol") {
       bumpInterDep(entry.moon, "mizchi/astra", astraNewVersion, "sol/moon.mod.json");
+      bumpInterDep(entry.moon, "mizchi/luna", lunaNewVersion, "sol/moon.mod.json");
     }
     if (entry.id === "sol_adapter_cloudflare") {
       bumpInterDep(entry.moon, "mizchi/sol", solNewVersion, "sol_adapter_cloudflare/moon.mod.json");
@@ -207,9 +261,92 @@ function applyPlan(plan, dryRun) {
     if (entry.id === "luna_components") {
       bumpInterDep(entry.moon, "mizchi/luna", lunaNewVersion, "luna_components/moon.mod.json");
     }
+    if (entry.id === "astra") {
+      bumpInterDep(entry.moon, "mizchi/luna", lunaNewVersion, "astra/moon.mod.json");
+    }
 
-    writeJson(entry.moonAbs, entry.moon, dryRun);
-    console.log(`  ${entry.moonModPath}: ${entry.currentMoon} -> ${entry.newMoon}`);
+    const unchanged = entry.currentMoon === entry.newMoon
+      && JSON.stringify(entry.moon) === JSON.stringify(readJson(entry.moonAbs));
+    if (unchanged) {
+      console.log(`  ${entry.moonModPath}: ${entry.newMoon} (already bumped, no write)`);
+    } else {
+      writeJson(entry.moonAbs, entry.moon, dryRun);
+      console.log(`  ${entry.moonModPath}: ${entry.currentMoon} -> ${entry.newMoon}`);
+    }
+  }
+
+  // Rewrite version literals embedded in source templates so they match the
+  // bumped moon.mod.json values. Without this `sol new` scaffolds a project
+  // that pins the previous release line; tracked as TODO.md refactor #2.
+  rewriteEmbeddedVersionLiterals(plan, dryRun);
+}
+
+// Re-target every "mizchi/<pkg>": "<semver>" string literal inside the
+// scaffold templates and bump the standalone sol VERSION const so they all
+// reference the post-bump versions. Idempotent: replaces only when the
+// target is different from the current literal.
+function rewriteEmbeddedVersionLiterals(plan, dryRun) {
+  const versionByPkg = {};
+  for (const entry of plan) {
+    if (entry.id === "sol") versionByPkg["mizchi/sol"] = entry.newMoon;
+    if (entry.id === "luna") versionByPkg["mizchi/luna"] = entry.newMoon;
+    if (entry.id === "sol_adapter_cloudflare")
+      versionByPkg["mizchi/sol_adapter_cloudflare"] = entry.newMoon;
+    if (entry.id === "sol_adapter_node")
+      versionByPkg["mizchi/sol_adapter_node"] = entry.newMoon;
+  }
+  const solNew = versionByPkg["mizchi/sol"];
+  // Templates that hard-code scaffold dependency versions. Both files emit
+  // the same project moon.mod.json shape; the scaffold_templates copy is
+  // shared with the native launcher.
+  const templateFiles = [
+    "sol/src/cli/templates.mbt",
+    "sol/src/scaffold_templates/templates.mbt",
+  ];
+  for (const rel of templateFiles) {
+    const abs = join(rootDir, rel);
+    if (!existsSync(abs)) continue;
+    let content = readFileSync(abs, "utf-8");
+    let touched = false;
+    for (const [pkg, version] of Object.entries(versionByPkg)) {
+      const pattern = new RegExp(
+        `("${pkg.replace(/\//g, "\\/")}":\\s*)"(\\d+\\.\\d+\\.\\d+)"`,
+        "g",
+      );
+      content = content.replace(pattern, (match, prefix, current) => {
+        if (current === version) return match;
+        console.log(`  ${rel}: ${pkg} ${current} -> ${version}`);
+        touched = true;
+        return `${prefix}"${version}"`;
+      });
+    }
+    if (touched) {
+      if (dryRun) {
+        console.log(`  [dry-run] write ${rel}`);
+      } else {
+        writeFileSync(abs, content);
+      }
+    }
+  }
+  // Standalone sol VERSION const consumed by the native launcher and the
+  // JS CLI (`sol --version`). Single source of truth for the sol literal.
+  if (solNew) {
+    const versionRel = "sol/src/version/version.mbt";
+    const versionAbs = join(rootDir, versionRel);
+    if (existsSync(versionAbs)) {
+      const content = readFileSync(versionAbs, "utf-8");
+      const pattern = /(pub const VERSION : String = ")(\d+\.\d+\.\d+)(")/;
+      const m = content.match(pattern);
+      if (m && m[2] !== solNew) {
+        const next = content.replace(pattern, `$1${solNew}$3`);
+        console.log(`  ${versionRel}: VERSION ${m[2]} -> ${solNew}`);
+        if (dryRun) {
+          console.log(`  [dry-run] write ${versionRel}`);
+        } else {
+          writeFileSync(versionAbs, next);
+        }
+      }
+    }
   }
 }
 
@@ -262,8 +399,10 @@ Touches manifests:
   sol/moon.mod.json, sol_adapter_cloudflare/moon.mod.json,
   sol_adapter_node/moon.mod.json, astra/moon.mod.json
   (sol/moon.mod.json deps.mizchi/astra.version is also bumped to match astra)
+  (sol/moon.mod.json deps.mizchi/luna is also bumped to match luna)
   (sol_adapter_cloudflare/moon.mod.json deps.mizchi/sol.version is also bumped)
   (sol_adapter_node/moon.mod.json deps.mizchi/sol.version is also bumped)
+  (astra/moon.mod.json deps.mizchi/luna is also bumped to match luna)
 
 Tags created by --release:
   luna-v<v>, luna_components-v<v>, sol-v<v>,
@@ -312,6 +451,9 @@ function main() {
 
   console.log(`Plan (${spec.kind === "explicit" ? `set ${spec.version}` : `${spec.kind} bump`}):`);
   const plan = buildPlan(spec);
+  if (spec.kind !== "explicit" && plan.every(p => p.alreadyBumped)) {
+    console.log("  (idempotent: HEAD vs working tree already shows a pending bump — reusing it)");
+  }
   applyPlan(plan, dryRun);
 
   if (doRelease) {

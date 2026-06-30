@@ -101,6 +101,12 @@ pub fn[E, A] raw_html(content : String) -> Node[E, A] {
 }
 
 ///|
+/// Create a raw HTML VNode from an explicit trusted wrapper.
+pub fn[E, A] raw_trusted_html(content : TrustedHtml) -> Node[E, A] {
+  RawHtml(content.to_string())
+}
+
+///|
 /// Create a conditional VNode.
 /// Only renders the child when the condition is true.
 /// ```mbt check
@@ -147,18 +153,6 @@ pub fn[E, A] for_each(items : () -> Array[Node[E, A]]) -> Node[E, A] {
 /// ```
 pub fn[E, A] component(render : () -> Node[E, A]) -> Node[E, A] {
   Component(render~)
-}
-
-///|
-/// Create an island VNode for partial hydration
-pub fn[E, A] island(
-  id : String,
-  url : String,
-  state : String,
-  children : Array[Node[E, A]],
-  trigger? : TriggerType = Load,
-) -> Node[E, A] {
-  Island({ id, url, state, trigger, children })
 }
 
 ///|
@@ -248,16 +242,15 @@ pub fn[E, A] switch_(
 }
 
 ///|
-/// Create an internal reference VNode (for server_dom.island())
+/// Create an internal reference VNode (for server_dom.wc_island())
 pub fn[E, A] internal_ref(
   url : String,
   state : String,
   trigger? : TriggerType = Load,
-  wc? : Bool = false,
   styles? : String = "",
   children? : Array[Node[E, A]] = [],
 ) -> Node[E, A] {
-  InternalRef({ url, state, trigger, wc, styles, children })
+  InternalRef({ url, state, trigger, styles, children })
 }
 
 // =============================================================================
@@ -265,23 +258,23 @@ pub fn[E, A] internal_ref(
 // =============================================================================
 
 ///|
-/// Create a ComponentRef for a regular Island component
+/// Create a ComponentRef for a Web Components Island
 pub fn[T] component_ref(
   url : String,
   props : T,
   trigger? : TriggerType = Load,
 ) -> ComponentRef[T] {
-  { url, props, wc: false, trigger }
+  { url, props, trigger }
 }
 
 ///|
-/// Create a ComponentRef for a Web Components Island
+/// Alias for `component_ref` — kept for backward source compatibility within the workspace.
 pub fn[T] wc_component_ref(
   url : String,
   props : T,
   trigger? : TriggerType = Load,
 ) -> ComponentRef[T] {
-  { url, props, wc: true, trigger }
+  { url, props, trigger }
 }
 
 // =============================================================================

@@ -1,7 +1,7 @@
 /// Valence Core Framework
 ///
 /// Reexports Luna substrate + provides FFI helpers for structural mutations
-/// Every component: (DomNode, () -> String) — visual for humans, narrative for instances
+/// Every component is a Dual: (DomNode, () -> NarrativeNode) — pixels, and a narrative node
 
 // ============================================================================
 // VALENCE CORE: FFI HELPERS FOR STRUCTURAL MUTATIONS
@@ -25,37 +25,14 @@ pub fn element_exists(elem_id: String) -> Bool {
 }
 
 // ============================================================================
-// COMPONENT TYPE CONVENTION
+// THE COMPONENT CONTRACT
 // ============================================================================
-
-/// Every Valence component returns this tuple:
-/// - DomNode: visual rendering for humans in the browser
-/// - () -> String: narrative function for AI instances to read current state
-///
-/// The narrative is callable so it always reflects current state.
-/// It's tested via oracle pattern to ensure it matches the visual.
-pub type Component = (DomNode, () -> String)
-
-/// Helper: create a component with visual + narrative
-pub fn component(visual: DomNode, narrative: () -> String) -> Component {
-  (visual, narrative)
-}
-
-// ============================================================================
-// COMMON HELPERS
-// ============================================================================
-
-/// Extract narrative from component
-pub fn get_narrative(comp: Component) -> String {
-  let (_visual, narrative) = comp
-  narrative()
-}
-
-/// Extract visual from component
-pub fn get_visual(comp: Component) -> DomNode {
-  let (visual, _narrative) = comp
-  visual
-}
+//
+// The old flat contract lived here — `Component = (DomNode, () -> String)` plus
+// component()/get_narrative()/get_visual(). It's retired. A component is now a
+// **Dual** = `(DomNode, () -> NarrativeNode)` (see dual.mbt): the narrative half is a
+// composable *node*, not a flat string. Read one with `dual_read`; compose many into a
+// `Surface`. The String form had no consumers left; it's gone.
 
 // ============================================================================
 // ZOOM LEVELS (for Event Stream and other zoom-aware components)
